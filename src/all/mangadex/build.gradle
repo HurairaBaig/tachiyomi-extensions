@@ -1,0 +1,33 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+}
+ext {
+    extName = 'MangaDex Safe'
+    pkgNameSuffix = 'all.mangadex'
+    extClass = '.MangaDex'
+    extVersionCode = 1
+    libVersion = '1.4'
+    isNsfw = false
+}
+android {
+    namespace 'eu.kanade.tachiyomi.extension.all.mangadex'
+    compileSdk 33
+    defaultConfig {
+        applicationId "eu.kanade.tachiyomi.extension.all.mangadex"
+        minSdk 21
+        targetSdk 28
+        versionCode 1
+        versionName "1.4.1"
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+    kotlinOptions { jvmTarget = '11' }
+}
+dependencies {
+    compileOnly 'com.github.tachiyomiorg:extensions-lib:1.4'
+    compileOnly 'com.squareup.okhttp3:okhttp:4.10.0'
+    compileOnly 'io.reactivex:rxjava:1.3.8'
+}
