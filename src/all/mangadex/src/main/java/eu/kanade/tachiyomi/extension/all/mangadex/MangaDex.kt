@@ -9,6 +9,7 @@ import eu.kanade.tachiyomi.source.online.HttpSource
 import okhttp3.HttpUrl
 import okhttp3.Request
 import okhttp3.Response
+import okhttp3.HttpUrl.Companion.toHttpUrl
 import org.json.JSONArray
 import org.json.JSONObject
 import java.time.Instant
