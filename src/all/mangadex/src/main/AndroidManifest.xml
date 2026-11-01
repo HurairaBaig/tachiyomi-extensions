@@ -1,5 +1,12 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <application android:allowBackup="false"
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="eu.kanade.tachiyomi.extension.all.mangadex">
+    <uses-feature android:name="tachiyomi.extension" />
+    <application
+        android:allowBackup="false"
         android:label="Tachiyomi: MangaDex Safe"
-        android:icon="@android:drawable/sym_def_app_icon" />
+        android:icon="@android:drawable/sym_def_app_icon">
+        <meta-data android:name="tachiyomi.extension.class" android:value=".MangaDex" />
+        <meta-data android:name="tachiyomi.extension.nsfw" android:value="0" />
+    </application>
 </manifest>
