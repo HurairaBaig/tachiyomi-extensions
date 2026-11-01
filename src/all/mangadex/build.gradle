@@ -6,7 +6,7 @@ ext {
     extName = 'MangaDex Safe'
     pkgNameSuffix = 'all.mangadex'
     extClass = '.MangaDex'
-    extVersionCode = 1
+    extVersionCode = 2
     libVersion = '1.4'
     isNsfw = false
 }
@@ -17,8 +17,8 @@ android {
         applicationId "eu.kanade.tachiyomi.extension.all.mangadex"
         minSdk 21
         targetSdk 28
-        versionCode 1
-        versionName "1.4.1"
+        versionCode 2
+        versionName "1.4.2"
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_11
@@ -28,8 +28,6 @@ android {
     kotlinOptions { jvmTarget = '11' }
 }
 dependencies {
-    compileOnly 'com.github.tachiyomiorg:extensions-lib:1.4'
-    compileOnly 'com.squareup.okhttp3:okhttp:4.10.0'
-    compileOnly 'io.reactivex:rxjava:1.3.8'
+    compileOnly project(':extensions-lib')
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.3'
 }

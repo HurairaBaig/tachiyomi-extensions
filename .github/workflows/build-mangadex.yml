@@ -6,6 +6,7 @@ on:
       - 'build.gradle'
       - 'settings.gradle'
       - 'gradle.properties'
+      - 'extensions-lib/**'
       - 'src/all/mangadex/**'
       - '.github/workflows/build-mangadex.yml'
   workflow_dispatch:
@@ -14,10 +15,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Fetch archived Tachiyomi 1.4 API stubs
+        run: |
+          git clone --depth 1 https://github.com/tachiyomiorg/extensions-lib.git /tmp/tachiyomi-extensions-lib
+          mkdir -p extensions-lib/src/main
+          cp -R /tmp/tachiyomi-extensions-lib/library/src/main/. extensions-lib/src/main/
+          cp /tmp/tachiyomi-extensions-lib/LICENSE extensions-lib/LICENSE
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '11'
+          java-version: '17'
       - uses: gradle/actions/setup-gradle@v3
         with:
           gradle-version: '7.6.3'
