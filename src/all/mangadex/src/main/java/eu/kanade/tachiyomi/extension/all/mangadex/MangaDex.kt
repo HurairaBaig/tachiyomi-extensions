@@ -1,5 +1,6 @@
 package eu.kanade.tachiyomi.extension.all.mangadex
 
+import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.Page
@@ -158,6 +159,8 @@ class MangaDex : HttpSource() {
             Page(index, "", "$base/data/$hash/$fileName")
         }
     }
+
+    override fun imageUrlParse(response: Response): String = response.request.url.toString()
 
     override fun getMangaUrl(manga: SManga): String = "$baseUrl/title/${manga.url}"
     override fun getChapterUrl(chapter: SChapter): String = "$baseUrl/chapter/${chapter.url}"
