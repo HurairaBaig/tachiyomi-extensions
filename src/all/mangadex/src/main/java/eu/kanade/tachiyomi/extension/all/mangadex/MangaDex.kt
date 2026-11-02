@@ -87,7 +87,7 @@ class MangaDex : HttpSource(), ConfigurableSource {
             addQueryParameter("contentRating[]", "safe")
             addQueryParameter("includes[]", "cover_art")
         }
-        return GET(url)
+        return GET(url, headers)
     }
 
     override fun popularMangaRequest(page: Int): Request {
@@ -98,7 +98,7 @@ class MangaDex : HttpSource(), ConfigurableSource {
             addQueryParameter("contentRating[]", "safe")
             addQueryParameter("includes[]", "cover_art")
         }
-        return GET(url)
+        return GET(url, headers)
     }
 
     override fun popularMangaParse(response: Response): MangasPage = parseMangaPage(response)
@@ -114,7 +114,7 @@ class MangaDex : HttpSource(), ConfigurableSource {
             addQueryParameter("contentRating[]", "safe")
             addQueryParameter("includes[]", "cover_art")
         }
-        return GET(url)
+        return GET(url, headers)
     }
 
     override fun searchMangaParse(response: Response): MangasPage = parseMangaPage(response)
@@ -127,7 +127,7 @@ class MangaDex : HttpSource(), ConfigurableSource {
             addQueryParameter("includes[]", "author")
             addQueryParameter("includes[]", "artist")
         }
-        return GET(url)
+        return GET(url, headers)
     }
 
     override fun mangaDetailsParse(response: Response): SManga {
@@ -192,7 +192,7 @@ class MangaDex : HttpSource(), ConfigurableSource {
                 addQueryParameter("translatedLanguage[]", language)
             }
         }
-        return GET(url)
+        return GET(url, headers)
     }
 
     override fun chapterListParse(response: Response): List<SChapter> {
@@ -205,8 +205,7 @@ class MangaDex : HttpSource(), ConfigurableSource {
         var offset = chapterPageSize
         while (offset < total) {
             val nextUrl = requestUrl.newBuilder().setQueryParameter("offset", offset.toString()).build()
-            client.newCall(GET(nextUrl)).execute().use { nextResponse ->
-                if (!nextResponse.isSuccessful) throw Exception("MangaDex chapter request failed: ${nextResponse.code}")
+            client.newCall(GET(nextUrl, headers)).execute().use { nextResponse ->
                 val json = responseJson(nextResponse)
                 appendChapters(json.optJSONArray("data"), chapters)
             }
@@ -216,10 +215,10 @@ class MangaDex : HttpSource(), ConfigurableSource {
     }
 
     override fun pageListRequest(chapter: SChapter): Request =
-        GET("$apiUrl/at-home/server/${chapter.url}")
+        GET("$apiUrl/at-home/server/${chapter.url}", headers)
 
     override fun pageListParse(response: Response): List<Page> {
-        val root = JSONObject(response.body!!.string())
+        val root = responseJson(response)
         val base = root.getString("baseUrl")
         val chapter = root.getJSONObject("chapter")
         val hash = chapter.getString("hash")
@@ -257,7 +256,7 @@ class MangaDex : HttpSource(), ConfigurableSource {
     }
 
     private fun parseMangaPage(response: Response): MangasPage {
-        val root = JSONObject(response.body!!.string())
+        val root = responseJson(response)
         val data = root.optJSONArray("data") ?: JSONArray()
         val manga = mutableListOf<SManga>()
         for (i in 0 until data.length()) {
