@@ -39,6 +39,8 @@ class MangaDex : HttpSource() {
 
     override fun popularMangaParse(response: Response): MangasPage = parseMangaPage(response)
 
+    override fun latestUpdatesParse(response: Response): MangasPage = MangasPage(emptyList(), false)
+
     override fun searchMangaRequest(page: Int, query: String, filters: FilterList): Request {
         val url = api("$apiUrl/manga") {
             addQueryParameter("limit", pageSize.toString())
