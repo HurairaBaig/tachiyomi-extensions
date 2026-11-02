@@ -1,6 +1,11 @@
 package eu.kanade.tachiyomi.extension.all.mangadex
 
 import eu.kanade.tachiyomi.network.GET
+import android.content.Context
+import android.content.SharedPreferences
+import androidx.preference.ListPreference
+import androidx.preference.PreferenceScreen
+import eu.kanade.tachiyomi.source.ConfigurableSource
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.Page
@@ -16,7 +21,7 @@ import org.json.JSONObject
 import java.time.Instant
 
 /** Original Tachiyomi 0.x source. Only MangaDex Safe-rated manga are listed. */
-class MangaDex : HttpSource() {
+class MangaDex : HttpSource(), ConfigurableSource {
     override val name = "MangaDex Safe"
     override val baseUrl = "https://mangadex.org"
     override val lang = "all"
@@ -25,6 +30,50 @@ class MangaDex : HttpSource() {
     private val apiUrl = "https://api.mangadex.org"
     private val pageSize = 50
     private val chapterPageSize = 500
+    private lateinit var preferenceContext: Context
+    private val languagePreferences: SharedPreferences by lazy {
+        preferenceContext.getSharedPreferences("source_$id", Context.MODE_PRIVATE)
+    }
+
+    private val chapterLanguages = linkedMapOf(
+        "all" to "All languages",
+        "en" to "English",
+        "ja" to "Japanese",
+        "ko" to "Korean",
+        "zh" to "Chinese (Simplified)",
+        "zh-hk" to "Chinese (Traditional)",
+        "es" to "Spanish",
+        "es-la" to "Spanish (Latin America)",
+        "pt-br" to "Portuguese (Brazil)",
+        "pt" to "Portuguese",
+        "fr" to "French",
+        "de" to "German",
+        "it" to "Italian",
+        "ru" to "Russian",
+        "uk" to "Ukrainian",
+        "ar" to "Arabic",
+        "id" to "Indonesian",
+        "ms" to "Malay",
+        "th" to "Thai",
+        "vi" to "Vietnamese",
+        "tr" to "Turkish",
+        "pl" to "Polish",
+        "hi" to "Hindi"
+    )
+
+    override fun setupPreferenceScreen(screen: PreferenceScreen) {
+        preferenceContext = screen.context
+        val languagePreference = ListPreference(screen.context).apply {
+            key = LANGUAGE_PREF
+            title = "Chapter language"
+            dialogTitle = "Choose chapter language"
+            entries = chapterLanguages.values.toTypedArray()
+            entryValues = chapterLanguages.keys.toTypedArray()
+            setDefaultValue("all")
+            summary = "%s"
+        }
+        screen.addPreference(languagePreference)
+    }
 
     override fun latestUpdatesRequest(page: Int): Request {
         val url = api("$apiUrl/manga") {
@@ -134,6 +183,10 @@ class MangaDex : HttpSource() {
             addQueryParameter("offset", "0")
             addQueryParameter("order[chapter]", "desc")
             addQueryParameter("includes[]", "scanlation_group")
+            val language = languagePreferences.getString(LANGUAGE_PREF, "all") ?: "all"
+            if (language != "all" && chapterLanguages.containsKey(language)) {
+                addQueryParameter("translatedLanguage[]", language)
+            }
         }
         return GET(url)
     }
@@ -252,6 +305,10 @@ class MangaDex : HttpSource() {
 
     private fun parseDate(value: String): Long =
         runCatching { Instant.parse(value).toEpochMilli() }.getOrDefault(0L)
+
+    companion object {
+        private const val LANGUAGE_PREF = "chapter_language"
+    }
 
     private fun api(path: String, configure: HttpUrl.Builder.() -> Unit): HttpUrl =
         path.toHttpUrl().newBuilder().apply(configure).build()
