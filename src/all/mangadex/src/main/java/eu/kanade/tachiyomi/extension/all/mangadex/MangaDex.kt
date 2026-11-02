@@ -14,6 +14,7 @@ import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
+import okhttp3.Headers
 import okhttp3.HttpUrl
 import okhttp3.Request
 import okhttp3.Response
@@ -28,6 +29,10 @@ class MangaDex : HttpSource(), ConfigurableSource {
     override val baseUrl = "https://mangadex.org"
     override val lang = "all"
     override val supportsLatest = false
+    override val headers: Headers = Headers.Builder()
+        .add("User-Agent", "MangaDex Safe Tachiyomi Extension (https://github.com/HurairaBaig/tachiyomi-extensions)")
+        .add("Accept", "application/json")
+        .build()
 
     private val apiUrl = "https://api.mangadex.org"
     private val pageSize = 50
@@ -126,7 +131,7 @@ class MangaDex : HttpSource(), ConfigurableSource {
     }
 
     override fun mangaDetailsParse(response: Response): SManga {
-        val root = JSONObject(response.body!!.string()).getJSONObject("data")
+        val root = responseJson(response).getJSONObject("data")
         val attributes = root.getJSONObject("attributes")
         require(attributes.optString("contentRating") == "safe") {
             "This source only allows Safe-rated MangaDex titles."
@@ -191,7 +196,7 @@ class MangaDex : HttpSource(), ConfigurableSource {
     }
 
     override fun chapterListParse(response: Response): List<SChapter> {
-        val first = JSONObject(response.body!!.string())
+        val first = responseJson(response)
         val total = first.optInt("total", 0)
         val chapters = mutableListOf<SChapter>()
         appendChapters(first.optJSONArray("data"), chapters)
@@ -202,7 +207,7 @@ class MangaDex : HttpSource(), ConfigurableSource {
             val nextUrl = requestUrl.newBuilder().setQueryParameter("offset", offset.toString()).build()
             client.newCall(GET(nextUrl)).execute().use { nextResponse ->
                 if (!nextResponse.isSuccessful) throw Exception("MangaDex chapter request failed: ${nextResponse.code}")
-                val json = JSONObject(nextResponse.body!!.string())
+                val json = responseJson(nextResponse)
                 appendChapters(json.optJSONArray("data"), chapters)
             }
             offset += chapterPageSize
@@ -229,6 +234,27 @@ class MangaDex : HttpSource(), ConfigurableSource {
 
     override fun getMangaUrl(manga: SManga): String = "$baseUrl/title/${manga.url}"
     override fun getChapterUrl(chapter: SChapter): String = "$baseUrl/chapter/${chapter.url}"
+
+    private fun responseJson(response: Response): JSONObject {
+        val body = response.body?.string()
+            ?: throw Exception("MangaDex returned an empty response (HTTP ${response.code}).")
+        if (!response.isSuccessful) {
+            val detail = body.trim().take(240).replace(Regex("\\s+"), " ")
+            throw Exception("MangaDex API error (HTTP ${response.code}). ${detail}")
+        }
+        if (!body.trimStart().startsWith("{")) {
+            val preview = body.trim().take(160).replace(Regex("\\s+"), " ")
+            throw Exception(
+                "MangaDex returned a non-JSON response instead of manga data. " +
+                    "Please try again later. Response: ${preview}"
+            )
+        }
+        return try {
+            JSONObject(body)
+        } catch (error: Exception) {
+            throw Exception("MangaDex returned invalid JSON: ${error.message}")
+        }
+    }
 
     private fun parseMangaPage(response: Response): MangasPage {
         val root = JSONObject(response.body!!.string())
