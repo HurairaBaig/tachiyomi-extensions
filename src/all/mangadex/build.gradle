@@ -6,7 +6,7 @@ ext {
     extName = 'MangaDex Safe Test'
     pkgNameSuffix = 'all.mangadex.test'
     extClass = '.MangaDex'
-    extVersionCode = 3
+    extVersionCode = 4
     libVersion = '1.4'
     isNsfw = false
 }
@@ -17,8 +17,8 @@ android {
         applicationId "eu.kanade.tachiyomi.extension.all.mangadex.test"
         minSdk 21
         targetSdk 28
-        versionCode 3
-        versionName "1.5.0"
+        versionCode 4
+        versionName "1.5.1"
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_11
