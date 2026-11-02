@@ -3,8 +3,8 @@ plugins {
     id 'org.jetbrains.kotlin.android'
 }
 ext {
-    extName = 'MangaDex Safe'
-    pkgNameSuffix = 'all.mangadex'
+    extName = 'MangaDex Safe Test'
+    pkgNameSuffix = 'all.mangadex.test'
     extClass = '.MangaDex'
     extVersionCode = 3
     libVersion = '1.4'
@@ -14,7 +14,7 @@ android {
     namespace 'eu.kanade.tachiyomi.extension.all.mangadex'
     compileSdk 33
     defaultConfig {
-        applicationId "eu.kanade.tachiyomi.extension.all.mangadex"
+        applicationId "eu.kanade.tachiyomi.extension.all.mangadex.test"
         minSdk 21
         targetSdk 28
         versionCode 3
