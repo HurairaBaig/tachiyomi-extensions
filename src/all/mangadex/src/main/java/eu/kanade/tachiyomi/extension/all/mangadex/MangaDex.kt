@@ -26,6 +26,17 @@ class MangaDex : HttpSource() {
     private val pageSize = 50
     private val chapterPageSize = 500
 
+    override fun latestUpdatesRequest(page: Int): Request {
+        val url = api("$apiUrl/manga") {
+            addQueryParameter("limit", pageSize.toString())
+            addQueryParameter("offset", ((page - 1) * pageSize).toString())
+            addQueryParameter("order[updatedAt]", "desc")
+            addQueryParameter("contentRating[]", "safe")
+            addQueryParameter("includes[]", "cover_art")
+        }
+        return GET(url)
+    }
+
     override fun popularMangaRequest(page: Int): Request {
         val url = api("$apiUrl/manga") {
             addQueryParameter("limit", pageSize.toString())
