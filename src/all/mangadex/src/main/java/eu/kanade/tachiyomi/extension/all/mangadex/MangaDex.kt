@@ -1,10 +1,12 @@
 package eu.kanade.tachiyomi.extension.all.mangadex
 
 import eu.kanade.tachiyomi.network.GET
-import android.content.Context
 import android.content.SharedPreferences
 import androidx.preference.ListPreference
 import androidx.preference.PreferenceScreen
+import android.app.Application
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 import eu.kanade.tachiyomi.source.ConfigurableSource
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
@@ -30,9 +32,8 @@ class MangaDex : HttpSource(), ConfigurableSource {
     private val apiUrl = "https://api.mangadex.org"
     private val pageSize = 50
     private val chapterPageSize = 500
-    private lateinit var preferenceContext: Context
     private val languagePreferences: SharedPreferences by lazy {
-        preferenceContext.getSharedPreferences("source_$id", Context.MODE_PRIVATE)
+        Injekt.get<Application>().getSharedPreferences("source_$id", 0x0000)
     }
 
     private val chapterLanguages = linkedMapOf(
@@ -62,11 +63,9 @@ class MangaDex : HttpSource(), ConfigurableSource {
     )
 
     override fun setupPreferenceScreen(screen: PreferenceScreen) {
-        preferenceContext = screen.context
         val languagePreference = ListPreference(screen.context).apply {
             key = LANGUAGE_PREF
             title = "Chapter language"
-            dialogTitle = "Choose chapter language"
             entries = chapterLanguages.values.toTypedArray()
             entryValues = chapterLanguages.keys.toTypedArray()
             setDefaultValue("all")
