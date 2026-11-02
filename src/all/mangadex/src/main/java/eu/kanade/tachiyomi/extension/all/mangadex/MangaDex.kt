@@ -29,7 +29,7 @@ class MangaDex : HttpSource(), ConfigurableSource {
     override val baseUrl = "https://mangadex.org"
     override val lang = "all"
     override val supportsLatest = false
-    override val headers: Headers = Headers.Builder()
+    private val apiHeaders: Headers = Headers.Builder()
         .add("User-Agent", "MangaDex Safe Tachiyomi Extension (https://github.com/HurairaBaig/tachiyomi-extensions)")
         .add("Accept", "application/json")
         .build()
@@ -87,7 +87,7 @@ class MangaDex : HttpSource(), ConfigurableSource {
             addQueryParameter("contentRating[]", "safe")
             addQueryParameter("includes[]", "cover_art")
         }
-        return GET(url, headers)
+        return GET(url, apiHeaders)
     }
 
     override fun popularMangaRequest(page: Int): Request {
@@ -98,7 +98,7 @@ class MangaDex : HttpSource(), ConfigurableSource {
             addQueryParameter("contentRating[]", "safe")
             addQueryParameter("includes[]", "cover_art")
         }
-        return GET(url, headers)
+        return GET(url, apiHeaders)
     }
 
     override fun popularMangaParse(response: Response): MangasPage = parseMangaPage(response)
@@ -114,7 +114,7 @@ class MangaDex : HttpSource(), ConfigurableSource {
             addQueryParameter("contentRating[]", "safe")
             addQueryParameter("includes[]", "cover_art")
         }
-        return GET(url, headers)
+        return GET(url, apiHeaders)
     }
 
     override fun searchMangaParse(response: Response): MangasPage = parseMangaPage(response)
@@ -127,7 +127,7 @@ class MangaDex : HttpSource(), ConfigurableSource {
             addQueryParameter("includes[]", "author")
             addQueryParameter("includes[]", "artist")
         }
-        return GET(url, headers)
+        return GET(url, apiHeaders)
     }
 
     override fun mangaDetailsParse(response: Response): SManga {
@@ -192,7 +192,7 @@ class MangaDex : HttpSource(), ConfigurableSource {
                 addQueryParameter("translatedLanguage[]", language)
             }
         }
-        return GET(url, headers)
+        return GET(url, apiHeaders)
     }
 
     override fun chapterListParse(response: Response): List<SChapter> {
@@ -205,7 +205,7 @@ class MangaDex : HttpSource(), ConfigurableSource {
         var offset = chapterPageSize
         while (offset < total) {
             val nextUrl = requestUrl.newBuilder().setQueryParameter("offset", offset.toString()).build()
-            client.newCall(GET(nextUrl, headers)).execute().use { nextResponse ->
+            client.newCall(GET(nextUrl, apiHeaders)).execute().use { nextResponse ->
                 val json = responseJson(nextResponse)
                 appendChapters(json.optJSONArray("data"), chapters)
             }
@@ -215,7 +215,7 @@ class MangaDex : HttpSource(), ConfigurableSource {
     }
 
     override fun pageListRequest(chapter: SChapter): Request =
-        GET("$apiUrl/at-home/server/${chapter.url}", headers)
+        GET("$apiUrl/at-home/server/${chapter.url}", apiHeaders)
 
     override fun pageListParse(response: Response): List<Page> {
         val root = responseJson(response)
