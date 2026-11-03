@@ -1,7 +1,7 @@
-name: Build MangaDex Safe extension
+name: Build and publish MangaDex Safe extension
 on:
   push:
-    branches: [mangadex-safe-legacy]
+    branches: [publish/mangadex-safe-repo]
     paths:
       - 'build.gradle'
       - 'settings.gradle'
@@ -10,6 +10,8 @@ on:
       - 'src/all/mangadex/**'
       - '.github/workflows/build-mangadex.yml'
   workflow_dispatch:
+permissions:
+  contents: write
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -25,16 +27,48 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-      - name: Set up Gradle without GitHub cache
-        uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '7.6.3'
           cache-disabled: true
-      - name: Build debug APK
-        run: gradle :src:all:mangadex:assembleDebug --no-daemon --stacktrace --info
-      - name: Upload APK artifact
+      - name: Build extension APK
+        run: gradle :src:all:mangadex:assembleDebug --no-daemon --stacktrace
+      - name: Prepare repository index
+        run: |
+          mkdir -p repo
+          cp src/all/mangadex/build/outputs/apk/debug/*.apk repo/tachiyomi-all.mangadex.safe-v1.5.2.apk
+          cat > repo/index.min.json <<'JSON'
+          [
+            {
+              "name": "MangaDex Safe",
+              "pkg": "eu.kanade.tachiyomi.extension.all.mangadex.safe",
+              "apk": "tachiyomi-all.mangadex.safe-v1.5.2.apk",
+              "lang": "all",
+              "code": 5,
+              "version": "1.5.2",
+              "nsfw": 0,
+              "sources": [
+                {
+                  "name": "MangaDex Safe",
+                  "lang": "all",
+                  "id": "255964055",
+                  "baseUrl": "https://mangadex.org"
+                }
+              ]
+            }
+          ]
+          JSON
+          python -m json.tool repo/index.min.json > /dev/null
+      - name: Publish extension repository
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: repo
+          publish_dir: ./repo
+          force_orphan: true
+      - name: Upload APK build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: mangadex-safe-debug-apk
-          path: src/all/mangadex/build/outputs/apk/debug/*.apk
+          name: mangadex-safe-1.5.2
+          path: repo/*.apk
           if-no-files-found: error
