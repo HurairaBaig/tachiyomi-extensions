@@ -25,7 +25,7 @@ import java.time.Instant
 
 /** Original Tachiyomi 0.x source. Only MangaDex Safe-rated manga are listed. */
 class MangaDex : HttpSource(), ConfigurableSource {
-    override val name = "MangaDex Safe (Test)"
+    override val name = "MangaDex Safe"
     override val baseUrl = "https://mangadex.org"
     override val lang = "all"
     override val supportsLatest = false
