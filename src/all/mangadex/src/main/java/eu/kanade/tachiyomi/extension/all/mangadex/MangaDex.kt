@@ -1,4 +1,4 @@
-package eu.kanade.tachiyomi.extension.all.mangadex.test
+package eu.kanade.tachiyomi.extension.all.mangadex.safe
 
 import eu.kanade.tachiyomi.network.GET
 import android.content.SharedPreferences
