@@ -29,6 +29,11 @@ class MangaDex : HttpSource(), ConfigurableSource {
     override val baseUrl = "https://mangadex.org"
     override val lang = "all"
     override val supportsLatest = false
+
+    // Manga cover thumbnails are fetched by Tachiyomi using the source-level headers.
+    // imageRequest() only affects chapter pages, so set the CDN Referer here as well.
+    override fun headersBuilder(): Headers.Builder = super.headersBuilder()
+        .add("Referer", "$baseUrl/")
     private val apiHeaders: Headers = Headers.Builder()
         .add("User-Agent", "MangaDex Safe Tachiyomi Extension (https://github.com/HurairaBaig/tachiyomi-extensions)")
         .add("Accept", "application/json")
