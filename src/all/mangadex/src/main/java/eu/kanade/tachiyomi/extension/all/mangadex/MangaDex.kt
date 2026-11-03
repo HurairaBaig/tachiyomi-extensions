@@ -229,6 +229,18 @@ class MangaDex : HttpSource(), ConfigurableSource {
         }
     }
 
+    // MangaDex cover and chapter images use the CDN, not the JSON API.
+    // Keep image headers separate so API-only Accept headers are not sent to the CDN.
+    private val imageHeaders: Headers by lazy {
+        Headers.Builder()
+            .add("User-Agent", "MangaDex Safe Tachiyomi Extension (https://github.com/HurairaBaig/tachiyomi-extensions)")
+            .add("Referer", "$baseUrl/")
+            .add("Accept", "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8")
+            .build()
+    }
+
+    override fun imageRequest(page: Page): Request = GET(page.imageUrl!!, imageHeaders)
+
     override fun imageUrlParse(response: Response): String = response.request.url.toString()
 
     override fun getMangaUrl(manga: SManga): String = "$baseUrl/title/${manga.url}"
